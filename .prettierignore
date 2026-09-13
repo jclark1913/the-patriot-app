@@ -1,0 +1,9 @@
+node_modules/
+dist/
+coverage/
+.tmp/
+.npm-cache/
+package-lock.json
+AGENTS.md
+uscis-civics-pwa-spec.md
+src/data/questions.json
