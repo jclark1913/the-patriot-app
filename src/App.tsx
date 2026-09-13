@@ -6,6 +6,7 @@ import { PracticeFlow } from './PracticeFlow'
 import { createPracticeSession, reducePractice } from './practice'
 import type { PracticeAction, PracticeSession } from './practice'
 import { shuffledCopy } from './study'
+import { usePwa } from './usePwa'
 
 type Screen = 'home' | 'study' | 'practice' | 'help'
 
@@ -57,9 +58,13 @@ function StudyArtwork() {
 function Home({
   onStudy,
   onPractice,
+  onHelp,
+  pwa,
 }: {
   onStudy: () => void
   onPractice: () => void
+  onHelp: () => void
+  pwa: ReturnType<typeof usePwa>
 }) {
   return (
     <main id="main-content" className="home-main">
@@ -93,17 +98,56 @@ function Home({
           <button
             className="button button-primary hero-button"
             onClick={onStudy}
+            disabled={pwa.updating}
           >
             Start studying <Icon name="arrow-right" />
           </button>
           <button
             className="button button-secondary hero-button"
             onClick={onPractice}
+            disabled={pwa.updating}
           >
             Practice test <Icon name="arrow-right" />
           </button>
         </div>
       </section>
+      {pwa.enabled && (
+        <div className="pwa-panel" aria-label="Offline and installation">
+          <div className="pwa-status-row">
+            <p role="status">
+              {pwa.offlineReady
+                ? 'Ready offline'
+                : !pwa.supported
+                  ? 'Offline use isn’t available in this browser.'
+                  : pwa.error
+                    ? 'Not ready offline'
+                    : 'Preparing offline use…'}
+            </p>
+            <button className="text-button" onClick={onHelp}>
+              Add to Home Screen <Icon name="arrow-right" />
+            </button>
+          </div>
+          {pwa.error && (
+            <p className="pwa-error" role="status">
+              {pwa.error}
+            </p>
+          )}
+          {pwa.updateReady && (
+            <div className="pwa-update">
+              <p role="status">
+                {pwa.updating ? 'Updating…' : 'Update available'}
+              </p>
+              <button
+                className="button button-secondary"
+                disabled={pwa.updating}
+                onClick={pwa.applyUpdate}
+              >
+                Update
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </main>
   )
 }
@@ -259,6 +303,40 @@ function Help({ onHome }: { onHome: () => void }) {
         </a>
       </section>
       <section>
+        <h2>Use offline</h2>
+        <p>
+          Open the app online and wait for “Ready offline” on Home. All 128
+          questions, Study, Practice, and this help will then work without a
+          connection. Source and lookup links still need the Internet. If your
+          browser removes the downloaded app data, open it online again.
+        </p>
+      </section>
+      <section>
+        <h2>Add to your iPhone Home Screen</h2>
+        <p>
+          Open this site in Safari and choose Share (under More in some
+          layouts). Tap Add to Home Screen, turn on Open as Web App if shown,
+          then tap Add. Open the new icon while online and wait for “Ready
+          offline” before using it without a connection.
+        </p>
+        <a
+          className="lookup-link"
+          href="https://support.apple.com/guide/iphone/open-as-web-app-iphea86e5236/ios"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Apple installation help <Icon name="external" />
+        </a>
+      </section>
+      <section>
+        <h2>App updates</h2>
+        <p>
+          When a new version is downloaded, an Update button appears on Home.
+          Finish or leave your session first, then tap Update. Study and
+          Practice won’t reload automatically.
+        </p>
+      </section>
+      <section>
         <h2>No saved progress</h2>
         <p>
           Study history and practice scores aren’t saved. Reloading starts a new
@@ -266,6 +344,7 @@ function Help({ onHome }: { onHome: () => void }) {
         </p>
       </section>
       <div className="source-details">
+        <p>App version: {__APP_VERSION__}</p>
         <p>{bankMetadata.sourceEdition}</p>
         <p>Question data: {bankMetadata.version}</p>
         <p>
@@ -283,8 +362,10 @@ export default function App() {
   const [practiceSession, setPracticeSession] =
     useState<PracticeSession | null>(null)
   const brandRef = useRef<HTMLDivElement>(null)
+  const pwa = usePwa(screen === 'home')
 
   function goTo(next: Screen) {
+    if (pwa.updating) return
     if (
       screen === 'practice' &&
       practiceSession &&
@@ -335,6 +416,8 @@ export default function App() {
         <Home
           onStudy={() => goTo('study')}
           onPractice={() => goTo('practice')}
+          onHelp={() => goTo('help')}
+          pwa={pwa}
         />
       )}
       {screen === 'study' && <Study onHome={() => goTo('home')} />}

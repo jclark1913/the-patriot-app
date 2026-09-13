@@ -792,6 +792,40 @@
     letter-spacing: -0.04em;
     margin-top: 16px;
   }
+  .pwa-panel {
+    border-top: 1px solid var(--line);
+    margin-bottom: 32px;
+    padding-top: 14px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .pwa-status-row,
+  .pwa-update {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 20px;
+  }
+  .pwa-status-row .text-button {
+    font-size: 13px;
+  }
+  .pwa-update {
+    margin-top: 12px;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .pwa-update .button {
+    min-height: 44px;
+    padding-block: 10px;
+  }
+  .pwa-error {
+    margin-top: 8px;
+    color: #87392f;
+  }
   .help-main section {
     margin-top: 35px;
     padding-bottom: 28px;
