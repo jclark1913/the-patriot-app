@@ -175,12 +175,16 @@ export function PracticeFlow({
   onAction,
   onHome,
   onRestart,
+  starredIds,
+  onToggleStar,
 }: {
   session: PracticeSession | null
   onStart: (count: number) => void
   onAction: (action: PracticeAction) => void
   onHome: () => void
   onRestart: () => void
+  starredIds: readonly string[]
+  onToggleStar: (questionId: string) => void
 }) {
   const question = session?.questions[session.grades.length]
   const position = session?.grades.length ?? 0
@@ -229,6 +233,8 @@ export function PracticeFlow({
           />
           <QuestionContent
             question={question}
+            starred={starredIds.includes(question.id)}
+            onToggleStar={() => onToggleStar(question.id)}
             revealed={session.revealed}
             onToggleReveal={() =>
               onAction({ type: 'toggle-answer', questionId: question.id })

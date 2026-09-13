@@ -1,9 +1,10 @@
 # Civics Study PWA — Product & Technical Specification
 
-**Status:** Simplified MVP scope, approved by the project owner  
+**Status:** MVP with starred-question extension approved September 13, 2026
+
 **Target:** Mobile-first web PWA, optimized for iPhone  
 **Audience:** One learner preparing in English for the standard 2025 civics test  
-**Scope:** Civics study and configurable practice; no saved learner progress
+**Scope:** Civics study, configurable practice, and locally saved starred questions; no saved scores or session history
 
 ## 1. Product goal
 
@@ -11,7 +12,7 @@ Build a small app that the learner can open from a URL, add to the iPhone Home S
 
 The app has two main activities: Study and Practice Test. Keep the interface and implementation simple. The learner can start immediately without an account or onboarding questionnaire.
 
-This revision replaces the earlier requirements for multiple test profiles, saved progress, bookmarks, weak-question tracking, test history, and storage infrastructure.
+The simplified MVP replaced earlier requirements for multiple test profiles, saved progress, bookmarks, weak-question tracking, test history, and storage infrastructure. The approved September 13, 2026 extension adds only manually starred questions and Study-style review, with locally saved question IDs.
 
 ## 2. MVP scope
 
@@ -19,6 +20,7 @@ Include:
 
 - The 128 official English questions for the standard 2025 civics test.
 - Study mode with answer reveal and ordered or shuffled navigation.
+- Manual starring in Study and Practice, saved locally across restarts, and Study-style review of starred questions.
 - Practice sessions with a user-selected question count from 1–128.
 - Correct/incorrect self-grading and a result for the current practice session.
 - Offline use, iPhone Home Screen installation, and safe app/content updates.
@@ -28,7 +30,7 @@ Include:
 Exclude:
 
 - The 2008 bank, 65/20 profiles, test-version selection, and eligibility onboarding.
-- Saved progress, bookmarks, weak-question tracking, historical statistics, and session recovery.
+- Saved progress beyond manual stars, automatic weak-question tracking, historical statistics, and session recovery.
 - Saved settings, storage repositories, schema migrations, export/import, and cloud backup.
 - A separate official-exam simulation mode or configurable passing thresholds.
 - User accounts, a backend, cloud sync, analytics, payments, and notifications.
@@ -39,7 +41,7 @@ Future features require a concrete need and separate approval. Custom developmen
 
 ## 3. Home and navigation
 
-Home should show a brief "2025 Civics Test · English" label, prominent Study and Practice Test actions, and a smaller Help & Sources link.
+Home should show a brief "2025 Civics Test · English" label, prominent Study and Practice Test actions, a smaller "Review starred questions" action with the current starred count, and a smaller Help & Sources link.
 
 Keep navigation shallow. Practice setup, questions, and results are stages of the same flow. A fresh page load with no live session should return to Home or practice setup, never a broken results screen.
 
@@ -55,6 +57,16 @@ Do not include progress dashboards, an onboarding wizard, or a general Settings 
 - Allow the learner to move backward and forward. Hide the answer when moving to a different question.
 - The learner considers an answer before revealing the accepted answers. Study navigation does not record grades or track learning history.
 - Show source/verification information where an answer changes over time or depends on location.
+
+### Starred questions and review
+
+- Provide a labeled Star / Starred toggle on questions in Study, Practice, and starred review, both before and after answer reveal. Use a comfortable touch target and an accessible pressed state.
+- Starring does not reveal an answer, move to another question, shuffle the order, or change a practice score. Correct/incorrect grades never add or remove stars automatically.
+- Home's Review starred questions action opens the saved selection in official question order. Use the existing reveal, previous/next, and shuffle controls; this is Study-style review, without scoring.
+- Capture the selection when review starts. Unstarring saves immediately but keeps the question in the current review, allowing the learner to reverse the toggle without a page jump. Navigation and shuffle continue to use that captured selection; the next review uses the updated stars.
+- Finishing review leaves stars in place. With no saved stars, show an explanation and a Start studying action. Support one through all 128 starred questions.
+- Save only stable question IDs, resolving answers from the current bundled question bank. Keep stars through ordinary restarts and app/content updates at the same site.
+- Explain in Help that stars are local to the browser or installed app where they were saved, with no account or sync. Safari and the installed iPhone Home Screen app keep separate website data. Clearing site data can remove stars.
 
 ## 5. Practice Test
 
@@ -105,9 +117,9 @@ The official standard 2025 test uses a bank of 128 questions, asks up to 20, and
 
 Use ordinary in-memory React state for the current screen, study order/position, practice count, selected questions, answer visibility, and current session results.
 
-Do not persist learner state to localStorage, sessionStorage, IndexedDB, cookies, or a server. Do not build storage adapters, migrations, saved preferences, or recovery logic.
+The only persisted learner state is the set of manually starred question IDs, in one app-specific localStorage key. Deduplicate and validate saved IDs against the bundled bank; ignore unknown IDs. Malformed data or unavailable storage must not break the app. If saving fails, retain the changes in memory and clearly explain that they can only be kept for the current session. Use small, focused helpers; do not build generic storage adapters, migrations, saved preferences, or recovery logic. Do not save scores, grades, or session position.
 
-A page reload or fresh app launch starts over. Backgrounding may leave the live session in memory; recovery after the browser terminates it is not required. Briefly explain before practice: "Your score is only kept for this session."
+A page reload or fresh app launch starts a new session and restores saved stars. Backgrounding may leave the live session in memory; recovery after the browser terminates it is not required. Briefly explain before practice: "Your score is only kept for this session."
 
 The service worker still caches application assets and bundled question data for offline use. This cache is necessary app content, not saved learner progress.
 
@@ -148,7 +160,7 @@ Use a service worker, preferably through the spec's proposed vite-plugin-pwa int
 - The complete question bank and bundled answer overrides.
 - Help/install content that can be displayed without opening external links.
 
-After the initial online load and successful cache preparation, all selected practice lengths and Study must work offline. Do not require network requests for navigation, questions, fonts, or grading. Only show "Ready offline" once required content has actually been cached.
+After the initial online load and successful cache preparation, all selected practice lengths, Study, starring, and starred review must work offline. Do not require network requests for navigation, questions, fonts, grading, or stars. Only show "Ready offline" once required content has actually been cached.
 
 ### iPhone installation
 
@@ -160,9 +172,9 @@ Respect iPhone safe-area insets and keep controls clear of the home indicator. D
 
 ### Updates
 
-Detect new app/content versions while online and offer a small Update action. Do not force a reload during Study or Practice.
+Detect new app/content versions while online and offer a small Update action. Do not force a reload during Study, Practice, or starred review.
 
-Apply updates from Home, after the learner has finished or explicitly exited an active session. A reload starts fresh. Keep the existing cached version usable until the new version is ready; a failed update must not disable offline study.
+Apply updates from Home, after the learner has finished or explicitly exited an active session. A reload starts a new session and retains saved stars. Keep the existing cached version usable until the new version is ready; a failed update must not disable offline study.
 
 Browser/site-data removal can remove cached content, requiring another online load. Do not promise permanent offline availability after cache removal.
 
@@ -186,7 +198,7 @@ Use a small set of components and pure functions for question selection, count v
 
 Routing can remain simple screen state. Add React Router only if real URL navigation becomes useful; if path-based routing is introduced, hosting must support route refreshes.
 
-A compact structure is sufficient: app/components, data, session logic, styles, and colocated tests. Create files as needed; no empty feature folders or storage layer.
+A compact structure is sufficient: app/components, data, session logic, a focused starred-question helper/hook, styles, and colocated tests. Create files as needed; no empty feature folders or generic storage layer.
 
 No backend, persistent state library, or runtime schema library is required. Add a dependency only when it resolves a concrete need.
 
@@ -221,14 +233,20 @@ Test observable behavior appropriate to the feature:
 - Fresh setup defaults and fresh state after reload.
 - Study navigation, shuffle behavior, and accessible count validation.
 - Safe update behavior around active sessions.
+- Star toggles before/after reveal, persistence across remounts, and no changes to grades or navigation.
+- Empty, single-question, and all-128 starred reviews; stable review selection through toggles, navigation, shuffle, and rerenders.
+- Deduplicated/unknown saved IDs, malformed data, blocked storage, and failed writes with a visible notice.
+- Offline starring/review and retention of saved IDs through app updates, with sessions still starting fresh.
 
-No saved-progress, migration, or historical-statistics tests are needed.
+Beyond stars, no saved-progress, migration, or historical-statistics tests are needed.
 
 ### Manual iPhone acceptance
 
 Verify Safari layout, enlarged text, Home Screen installation, standalone launch, safe areas, and offline operation on a real iPhone.
 
 After preparing the cache online, enable Airplane Mode and relaunch. Study questions, complete a 20-question practice, and exercise an All 128 session. Reload and confirm the app still works offline with a fresh session. Verify a subsequent online update and offline use of the updated content.
+
+Also star questions in Safari and in the installed Home Screen app, close/reopen each, and verify their separate saved selections. In Airplane Mode, change stars, reopen, and review them. Verify that an online app update retains stars and that review works offline afterward.
 
 Distinguish automated browser checks from real-device results. Do not mark unperformed iPhone checks as passed.
 
@@ -244,7 +262,7 @@ Before each milestone, present a concrete implementation plan and obtain approva
 
 The learner can receive an HTTPS URL, install the app on an iPhone, study the standard 2025 English questions, and practice any selected count from 1–128 without repeated questions. A session completes the chosen count and reports its score.
 
-After the initial cache preparation, Study and Practice work offline. Reloading starts fresh without requiring an Internet connection. Updated app/question content can be received safely when online. No account, saved progress, or developer assistance is required for ordinary use.
+After the initial cache preparation, Study, Practice, starring, and starred review work offline. Reloading starts a new session and restores saved stars without requiring an Internet connection. Updated app/question content can be received safely when online while retaining starred IDs. No account or developer assistance is required for ordinary use; scores and learning history remain unsaved.
 
 ## 14. Authoritative references
 

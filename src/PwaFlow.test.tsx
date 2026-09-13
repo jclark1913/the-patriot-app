@@ -1,6 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
+import { questions } from './data'
+import { STARRED_QUESTIONS_KEY } from './useStarredQuestions'
 
 const pwa = vi.hoisted(() => ({
   enabled: true,
@@ -14,6 +16,7 @@ const pwa = vi.hoisted(() => ({
 vi.mock('./usePwa', () => ({ usePwa: () => pwa }))
 
 beforeEach(() => {
+  window.localStorage.removeItem(STARRED_QUESTIONS_KEY)
   Object.assign(pwa, {
     offlineReady: false,
     updateReady: false,
@@ -104,8 +107,42 @@ describe('Home PWA controls', () => {
       screen.getByRole('button', { name: 'Start studying' }),
     ).toBeDisabled()
     expect(screen.getByRole('button', { name: 'Practice test' })).toBeDisabled()
+    expect(
+      screen.getByRole('button', { name: 'Review starred questions · 0' }),
+    ).toBeDisabled()
     expect(screen.getByRole('button', { name: 'Update' })).toBeDisabled()
     fireEvent.click(screen.getByRole('button', { name: 'Help & sources' }))
     expect(screen.getByText('Updating…')).toBeVisible()
+  })
+
+  it('protects starred review from updates and retains stars when the updated app remounts', () => {
+    window.localStorage.setItem(
+      STARRED_QUESTIONS_KEY,
+      JSON.stringify([questions[0].id]),
+    )
+    const view = render(<App />)
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Review starred questions · 1' }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Show answer' }))
+    pwa.updateReady = true
+    view.rerender(<App />)
+    expect(screen.getByRole('button', { name: 'Hide answer' })).toBeVisible()
+    expect(
+      screen.queryByRole('button', { name: 'Update' }),
+    ).not.toBeInTheDocument()
+    expect(pwa.applyUpdate).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: 'Finish review' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Update' }))
+    expect(pwa.applyUpdate).toHaveBeenCalledOnce()
+    view.unmount()
+    render(<App />)
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Review starred questions · 1' }),
+    )
+    expect(
+      screen.getByRole('button', { name: 'Star question' }),
+    ).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: 'Show answer' })).toBeVisible()
   })
 })

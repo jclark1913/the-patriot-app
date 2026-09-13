@@ -18,7 +18,26 @@ Open the localhost URL printed by Vite. No environment variables or API keys are
 Home, Study, Practice Test, and Help & Sources are implemented. Study includes all 128 questions,
 answer reveal, previous/next navigation, shuffle, official source links, and dated
 current answers. Local questions link to official directories; the app never asks
-for a location. Learner state exists only in memory.
+for a location. Active sessions, scores, and history exist only in memory.
+
+Questions in Study and Practice have a Star toggle. Home's Review starred questions action
+opens the saved selection with answer reveal, previous/next, and shuffle. Review
+captures its starting selection: removing a star saves immediately and affects
+the next review, keeping the current page and order steady. Grades and finishing
+a review never change stars automatically.
+
+Only starred question IDs persist, in the app-specific localStorage key
+`the-patriot-app:2025:starred-questions`. They survive ordinary restarts and app
+updates at the same site; answers come from the current bundled bank. Invalid IDs
+are ignored, malformed data is handled safely, and failed storage writes show a
+notice while letting the learner keep reviewing in the current session. There
+are no new dependencies, accounts, or sync.
+
+Stars belong to the browser or installed app where they were saved. Safari and
+the iPhone Home Screen app keep separate website data; clearing that data can
+remove stars. Private browsing may only retain stars temporarily. See
+[WebKit's Home Screen app storage behavior](https://webkit.org/blog/14787/webkit-features-in-safari-17-2/)
+and [browser localStorage behavior](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage).
 
 Practice accepts 1–128 questions, defaults to 20, and offers All 128. Each session
 asks its full selection in random order, reveals answers before self-grading, and
@@ -31,11 +50,11 @@ questions are still asked. Other lengths show counts and accuracy only.
 
 The production build is an installable PWA. It downloads the app, all 128
 questions, answer overrides, icons, and Help for offline use. Home shows
-“Ready offline” only after checking that the complete cache exists. No learner
-state is saved.
+“Ready offline” only after checking that the complete cache exists. Starring and
+starred review also work offline; scores and session position are not saved.
 
 Updates download in the background and wait for the learner to tap Update on
-Home. Study and Practice never reload automatically, including when another tab
+Home. Study, Practice, and starred review never reload automatically, including when another tab
 applies an update. The previous cache remains available if a download fails.
 
 Help includes iPhone installation steps, offline limitations, and app/content
@@ -51,8 +70,10 @@ npm run preview
 Open [the production preview](http://127.0.0.1:4173/the-patriot-app/) and wait
 for “Ready offline.” Stop that preview
 server, reload, and try Study or Practice: the cached app should still work.
-Reloading starts a fresh session. External source/lookup links require Internet.
-Clearing browser site data removes the download and requires another online load.
+Reloading starts a fresh session and restores saved stars. Star a few questions,
+reopen the app, and choose Review starred questions to try the feature. External
+source/lookup links require Internet. Clearing browser site data removes saved
+stars and the download, requiring another online load for offline content.
 
 `npm run dev` deliberately does not register a service worker, so development
 changes stay visible. Use the production preview for offline and update checks.
@@ -96,6 +117,10 @@ Before release, check these on the device:
 - Airplane Mode launch/reload; Study, a complete 20-question practice, and All 128.
 - An online update while a session is open: finish/exit, update from Home, then
   use the new version offline.
+- Starring before/after reveal in Study and Practice; saved selections after
+  closing/reopening Safari and the installed app, tested separately.
+- Offline star/unstar, reopen, and review, including one remaining star and
+  removal of the last star. Confirm stars survive an app update.
 
 Desktop browser checks are not a substitute for these physical-device checks.
 
@@ -115,6 +140,10 @@ PWA tests cover cache readiness, failed downloads, deferred activation, multiple
 tabs, and protecting Study/Practice sessions. The service worker uses
 `vite-plugin-pwa` with Workbox precaching. Its small message handler verifies the
 cache and activates an update only on request; the requesting tab alone reloads.
+
+Starred-question tests cover accessible toggles, stable review selection and
+shuffle, zero/one/all 128 questions, remount persistence, independence from grades,
+malformed/unknown saved IDs, storage failures, rapid toggles, and update behavior.
 
 Question source/provenance and answer-maintenance notes are in
 [src/data/SOURCES.md](src/data/SOURCES.md). Product scope and the approval workflow

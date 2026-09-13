@@ -1,5 +1,11 @@
 type IconName =
-  'arrow-right' | 'arrow-left' | 'external' | 'shuffle' | 'book' | 'star'
+  | 'arrow-right'
+  | 'arrow-left'
+  | 'external'
+  | 'shuffle'
+  | 'book'
+  | 'star'
+  | 'star-outline'
 
 export function Icon({
   name,
@@ -39,11 +45,11 @@ export function Icon({
           <path d="m6 8 3 1m6 0 3-1" />
         </>
       )}
-      {name === 'star' && (
+      {(name === 'star' || name === 'star-outline') && (
         <path
           d="m12 2 2.8 6.2 6.7.8-5 4.6 1.4 6.7-5.9-3.4-5.9 3.4 1.4-6.7-5-4.6 6.7-.8Z"
-          fill="currentColor"
-          stroke="none"
+          fill={name === 'star' ? 'currentColor' : 'none'}
+          stroke={name === 'star' ? 'none' : 'currentColor'}
         />
       )}
     </svg>

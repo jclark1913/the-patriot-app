@@ -7,10 +7,14 @@ export function QuestionContent({
   question,
   revealed,
   onToggleReveal,
+  starred,
+  onToggleStar,
 }: {
   question: CivicsQuestion
   revealed: boolean
   onToggleReveal: () => void
+  starred: boolean
+  onToggleStar: () => void
 }) {
   const headingRef = useRef<HTMLHeadingElement>(null)
 
@@ -29,7 +33,22 @@ export function QuestionContent({
       <h1 className="question-title" ref={headingRef} tabIndex={-1}>
         {question.question}
       </h1>
-      <p className="recall-hint">Think of your answer, then reveal.</p>
+      <div className="question-actions">
+        <p className="recall-hint">Think of your answer, then reveal.</p>
+        <button
+          type="button"
+          className="star-button"
+          aria-label="Star question"
+          aria-pressed={starred}
+          title={
+            starred ? 'Remove from starred questions' : 'Save for later review'
+          }
+          onClick={onToggleStar}
+        >
+          <Icon name={starred ? 'star' : 'star-outline'} />
+          {starred ? 'Starred' : 'Star'}
+        </button>
+      </div>
       <button
         className={`button reveal-button ${revealed ? 'is-revealed' : 'button-primary'}`}
         onClick={onToggleReveal}

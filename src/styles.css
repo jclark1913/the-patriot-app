@@ -92,11 +92,17 @@
   }
   .site-header {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     min-height: 112px;
     border-bottom: 1px solid var(--line);
     gap: 16px;
+    padding-block: 12px;
+  }
+  .site-header > div {
+    min-width: 0;
+    max-width: 100%;
   }
   .home-main {
     flex: 1;
@@ -148,7 +154,9 @@
     font-size: 24px;
     font-weight: 750;
     letter-spacing: -0.7px;
-    white-space: nowrap;
+    max-width: 100%;
+    text-align: left;
+    white-space: normal;
   }
   .brand-mark {
     flex-shrink: 0;
@@ -263,6 +271,20 @@
     flex-wrap: wrap;
     align-self: start;
     gap: 12px;
+  }
+  .home-starred {
+    flex-basis: 100%;
+    margin-top: 4px;
+  }
+  .home-starred .text-button {
+    font-size: 14px;
+  }
+  .home-starred p {
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .home-starred button:disabled {
+    color: var(--muted);
   }
   .button-secondary {
     background: var(--paper);
@@ -482,6 +504,57 @@
     font-size: 12px;
     color: var(--muted);
   }
+  .question-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 16px;
+    margin-top: 20px;
+  }
+  .question-actions .recall-hint {
+    margin-top: 0;
+  }
+  .star-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    min-width: 100px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--paper);
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .star-button .icon {
+    width: 19px;
+    height: 19px;
+  }
+  .star-button:hover {
+    background: #f2f1ea;
+  }
+  .star-button[aria-pressed='true'] {
+    background: #f4e7df;
+    border-color: #c28d78;
+    color: #87392f;
+  }
+  .review-note {
+    color: var(--muted);
+    font-size: 13px;
+    margin: 0 6px 16px;
+  }
+  .stars-notice {
+    width: min(760px, calc(100% - 40px));
+    margin: 16px auto 0;
+    padding: 12px 16px;
+    border-radius: 8px;
+    background: #f4e7df;
+    color: #87392f;
+    font-size: 14px;
+  }
   .reveal-button {
     width: 100%;
     margin-top: 28px;
@@ -585,6 +658,7 @@
   }
   .study-navigation {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     gap: 16px;
     padding: 18px 30px;
@@ -592,6 +666,7 @@
     background: #fbfaf6;
   }
   .study-navigation .button {
+    flex: 1 1 auto;
     font-size: 12px;
     padding-inline: 15px;
     min-height: 48px;
@@ -839,6 +914,9 @@
     font-size: 14px;
     color: var(--muted);
     line-height: 1.8;
+  }
+  .help-main section p + p {
+    margin-top: 12px;
   }
   .source-details {
     margin-top: 28px;

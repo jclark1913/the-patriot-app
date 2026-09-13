@@ -4,7 +4,8 @@
 
 A small, mobile-first civics study app for one learner preparing in English
 for the standard 2025 test, delivered as an offline-capable iPhone web PWA.
-The MVP offers Study and configurable Practice with no saved learner progress.
+The app offers Study, configurable Practice, and locally saved starred questions
+for Study-style review. Scores, history, and active sessions are not saved.
 
 Read `uscis-civics-pwa-spec.md` before planning product or technical work.
 Treat it as the product baseline. Surface ambiguities and proposed
@@ -59,8 +60,12 @@ departures for discussion; do not silently reinterpret or edit the spec.
   early stopping, configurable thresholds, or a separate exam-simulation mode.
 - Treat offline Study and Practice as core requirements. Cache the app and
   bundled questions; core use must not depend on remote services or assets.
-- Keep learner state in memory only. Do not add saved progress, bookmarks,
-  history, saved settings, storage adapters, migrations, or session recovery.
+- Keep learner state in memory except for manually starred question IDs,
+  which may be saved in one app-specific localStorage key. This is the approved
+  bookmark exception. Do not add saved scores, history, saved settings, generic
+  storage adapters, migrations, accounts, sync, or session recovery.
+- Review starred questions with the Study controls. Freeze the review selection
+  when it starts; star changes affect the next review. Grading never changes stars.
 - Keep question data, session logic, and presentation separate. Use small,
   independently testable functions without generic profile frameworks.
 - Use official sources for civics content and test rules. Verify changing
@@ -69,8 +74,9 @@ departures for discussion; do not silently reinterpret or edit the spec.
   preconfigure the learner's location.
 - Keep stable question IDs for reliable content references. Bundle one 2025
   English bank; do not add older banks or special-consideration profiles.
-- Apply app/content updates safely outside active sessions. A fresh load
-  starts over; an asset cache is not persisted learner state.
+- Apply app/content updates safely outside active sessions, including starred
+  review. A fresh load starts a new session and retains locally saved stars;
+  an asset cache is not persisted learner state.
 - Keep MVP scope aligned with the spec. Propose additional features separately.
 - Defer custom skills until repeated work demonstrates a concrete need.
 

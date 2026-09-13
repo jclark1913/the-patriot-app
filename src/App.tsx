@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { bankMetadata, questions } from './data'
+import type { CivicsQuestion } from './data'
 import { Icon } from './components/Icon'
 import { QuestionContent } from './components/QuestionContent'
 import { PracticeFlow } from './PracticeFlow'
@@ -7,8 +8,9 @@ import { createPracticeSession, reducePractice } from './practice'
 import type { PracticeAction, PracticeSession } from './practice'
 import { shuffledCopy } from './study'
 import { usePwa } from './usePwa'
+import { useStarredQuestions } from './useStarredQuestions'
 
-type Screen = 'home' | 'study' | 'practice' | 'help'
+type Screen = 'home' | 'study' | 'review' | 'practice' | 'help'
 
 function Brand({ onHome }: { onHome: () => void }) {
   return (
@@ -59,11 +61,15 @@ function Home({
   onStudy,
   onPractice,
   onHelp,
+  onReview,
+  starredCount,
   pwa,
 }: {
   onStudy: () => void
   onPractice: () => void
   onHelp: () => void
+  onReview: () => void
+  starredCount: number
   pwa: ReturnType<typeof usePwa>
 }) {
   return (
@@ -109,6 +115,18 @@ function Home({
           >
             Practice test <Icon name="arrow-right" />
           </button>
+          <div className="home-starred">
+            <button
+              className="text-button"
+              onClick={onReview}
+              disabled={pwa.updating}
+            >
+              <Icon name="star-outline" />
+              Review starred questions · {starredCount}
+              <Icon name="arrow-right" />
+            </button>
+            <p>Save difficult questions for later.</p>
+          </div>
         </div>
       </section>
       {pwa.enabled && (
@@ -152,12 +170,33 @@ function Home({
   )
 }
 
-function Study({ onHome }: { onHome: () => void }) {
-  const [order, setOrder] = useState(() => [...questions])
+function Study({
+  onHome,
+  onStudy,
+  initialQuestions,
+  review,
+  starredIds,
+  onToggleStar,
+}: {
+  onHome: () => void
+  onStudy: () => void
+  initialQuestions: readonly CivicsQuestion[]
+  review: boolean
+  starredIds: readonly string[]
+  onToggleStar: (questionId: string) => void
+}) {
+  // Star changes affect the next review, including after toggling shuffle.
+  const [selection] = useState(() => [...initialQuestions])
+  const [order, setOrder] = useState(() => [...initialQuestions])
   const [index, setIndex] = useState(0)
   const [revealed, setRevealed] = useState(false)
   const [shuffled, setShuffled] = useState(false)
   const question = order[index]
+  const emptyHeadingRef = useRef<HTMLHeadingElement>(null)
+
+  useEffect(() => {
+    emptyHeadingRef.current?.focus({ preventScroll: true })
+  }, [])
 
   function navigate(nextIndex: number) {
     setIndex(nextIndex)
@@ -166,7 +205,7 @@ function Study({ onHome }: { onHome: () => void }) {
   }
 
   function toggleShuffle() {
-    setOrder(shuffled ? [...questions] : shuffledCopy(questions))
+    setOrder(shuffled ? [...selection] : shuffledCopy(selection))
     setShuffled(!shuffled)
     setIndex(0)
     setRevealed(false)
@@ -180,59 +219,89 @@ function Study({ onHome }: { onHome: () => void }) {
           <Icon name="arrow-left" />
           Home
         </button>
-        <span className="eyebrow">STUDY</span>
+        <span className="eyebrow">{review ? 'STARRED REVIEW' : 'STUDY'}</span>
       </div>
-      <section className="study-sheet" aria-label="Study question">
-        <div className="study-position">
-          <p>
-            Question <strong>{index + 1}</strong> of {order.length}
+      {!question ? (
+        <section className="practice-panel" aria-labelledby="empty-stars-title">
+          <h1 id="empty-stars-title" ref={emptyHeadingRef} tabIndex={-1}>
+            No starred questions yet
+          </h1>
+          <p className="practice-description">
+            Tap Star on a question in Study or Practice to save it for later.
           </p>
           <button
-            className={`shuffle-button ${shuffled ? 'is-active' : ''}`}
-            aria-pressed={shuffled}
-            onClick={toggleShuffle}
-            title="Change order and start from the first question"
+            className="button button-primary practice-start"
+            onClick={onStudy}
           >
-            <Icon name="shuffle" />
-            {shuffled ? 'Shuffle on' : 'Shuffle'}
+            Start studying <Icon name="arrow-right" />
           </button>
-        </div>
-        <progress
-          className="question-progress"
-          value={index + 1}
-          max={order.length}
-          aria-label="Question position"
-        />
-        <QuestionContent
-          question={question}
-          revealed={revealed}
-          onToggleReveal={() => setRevealed(!revealed)}
-        />
-        <div className="study-navigation">
-          <button
-            className="button button-previous"
-            onClick={() => navigate(index - 1)}
-            disabled={index === 0}
-          >
-            <Icon name="arrow-left" />
-            Previous
-          </button>
-          {index < order.length - 1 ? (
-            <button
-              className="button button-next"
-              onClick={() => navigate(index + 1)}
-            >
-              Next question
-              <Icon name="arrow-right" />
-            </button>
-          ) : (
-            <button className="button button-next" onClick={onHome}>
-              Finish studying
-              <Icon name="arrow-right" />
-            </button>
+        </section>
+      ) : (
+        <>
+          {review && (
+            <p className="review-note">
+              Removing a star updates your next review. This review keeps its
+              starting questions.
+            </p>
           )}
-        </div>
-      </section>
+          <section
+            className="study-sheet"
+            aria-label={review ? 'Starred review question' : 'Study question'}
+          >
+            <div className="study-position">
+              <p>
+                Question <strong>{index + 1}</strong> of {order.length}
+              </p>
+              <button
+                className={`shuffle-button ${shuffled ? 'is-active' : ''}`}
+                aria-pressed={shuffled}
+                onClick={toggleShuffle}
+                title="Change order and start from the first question"
+              >
+                <Icon name="shuffle" />
+                {shuffled ? 'Shuffle on' : 'Shuffle'}
+              </button>
+            </div>
+            <progress
+              className="question-progress"
+              value={index + 1}
+              max={order.length}
+              aria-label="Question position"
+            />
+            <QuestionContent
+              question={question}
+              starred={starredIds.includes(question.id)}
+              onToggleStar={() => onToggleStar(question.id)}
+              revealed={revealed}
+              onToggleReveal={() => setRevealed(!revealed)}
+            />
+            <div className="study-navigation">
+              <button
+                className="button button-previous"
+                onClick={() => navigate(index - 1)}
+                disabled={index === 0}
+              >
+                <Icon name="arrow-left" />
+                Previous
+              </button>
+              {index < order.length - 1 ? (
+                <button
+                  className="button button-next"
+                  onClick={() => navigate(index + 1)}
+                >
+                  Next question
+                  <Icon name="arrow-right" />
+                </button>
+              ) : (
+                <button className="button button-next" onClick={onHome}>
+                  {review ? 'Finish review' : 'Finish studying'}
+                  <Icon name="arrow-right" />
+                </button>
+              )}
+            </div>
+          </section>
+        </>
+      )}
     </main>
   )
 }
@@ -306,9 +375,10 @@ function Help({ onHome }: { onHome: () => void }) {
         <h2>Use offline</h2>
         <p>
           Open the app online and wait for “Ready offline” on Home. All 128
-          questions, Study, Practice, and this help will then work without a
-          connection. Source and lookup links still need the Internet. If your
-          browser removes the downloaded app data, open it online again.
+          questions, Study, Practice, starred review, and this help will then
+          work without a connection. Source and lookup links still need the
+          Internet. If your browser removes the downloaded app data, open it
+          online again.
         </p>
       </section>
       <section>
@@ -332,15 +402,32 @@ function Help({ onHome }: { onHome: () => void }) {
         <h2>App updates</h2>
         <p>
           When a new version is downloaded, an Update button appears on Home.
-          Finish or leave your session first, then tap Update. Study and
-          Practice won’t reload automatically.
+          Finish or leave your session first, then tap Update. Study, Practice,
+          and starred review won’t reload automatically. Saved stars stay in
+          place when you update.
         </p>
       </section>
       <section>
-        <h2>No saved progress</h2>
+        <h2>Starred questions</h2>
+        <p>
+          Tap Star in Study or Practice to save a question, then choose Review
+          starred questions on Home. Review uses answer reveal, previous/next,
+          and shuffle. Remove a star whenever you’re ready; the change applies
+          to your next review. Grading an answer or finishing a review doesn’t
+          change stars.
+        </p>
+        <p>
+          Stars are saved only in this browser or installed app, with no account
+          or sync. Safari and the iPhone Home Screen app keep separate stars.
+          Clearing website data can remove them, and private browsing may keep
+          them only temporarily. Star questions in the app you plan to use.
+        </p>
+      </section>
+      <section>
+        <h2>Session scores and history</h2>
         <p>
           Study history and practice scores aren’t saved. Reloading starts a new
-          session.
+          session; saved stars remain.
         </p>
       </section>
       <div className="source-details">
@@ -363,6 +450,7 @@ export default function App() {
     useState<PracticeSession | null>(null)
   const brandRef = useRef<HTMLDivElement>(null)
   const pwa = usePwa(screen === 'home')
+  const stars = useStarredQuestions()
 
   function goTo(next: Screen) {
     if (pwa.updating) return
@@ -391,7 +479,7 @@ export default function App() {
     document.title =
       screen === 'home'
         ? 'The Patriot App'
-        : `${screen === 'study' ? 'Study' : screen === 'practice' ? 'Practice Test' : 'Help & Sources'} — The Patriot App`
+        : `${screen === 'study' ? 'Study' : screen === 'review' ? 'Starred Review' : screen === 'practice' ? 'Practice Test' : 'Help & Sources'} — The Patriot App`
   }, [screen])
 
   return (
@@ -412,15 +500,36 @@ export default function App() {
           <Icon name="arrow-right" />
         </button>
       </header>
+      {stars.notice && (
+        <p className="stars-notice" role="status">
+          {stars.notice}
+        </p>
+      )}
       {screen === 'home' && (
         <Home
           onStudy={() => goTo('study')}
           onPractice={() => goTo('practice')}
           onHelp={() => goTo('help')}
+          onReview={() => goTo('review')}
+          starredCount={stars.ids.length}
           pwa={pwa}
         />
       )}
-      {screen === 'study' && <Study onHome={() => goTo('home')} />}
+      {(screen === 'study' || screen === 'review') && (
+        <Study
+          key={screen}
+          onHome={() => goTo('home')}
+          onStudy={() => goTo('study')}
+          initialQuestions={
+            screen === 'review'
+              ? questions.filter((question) => stars.ids.includes(question.id))
+              : questions
+          }
+          review={screen === 'review'}
+          starredIds={stars.ids}
+          onToggleStar={stars.toggleStar}
+        />
+      )}
       {screen === 'practice' && (
         <PracticeFlow
           session={practiceSession}
@@ -428,6 +537,8 @@ export default function App() {
           onAction={updatePractice}
           onHome={() => goTo('home')}
           onRestart={() => setPracticeSession(null)}
+          starredIds={stars.ids}
+          onToggleStar={stars.toggleStar}
         />
       )}
       {screen === 'help' && <Help onHome={() => goTo('home')} />}
