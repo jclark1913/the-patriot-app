@@ -1,4 +1,4 @@
-# Patriot
+# The Patriot App
 
 A small mobile-first civics study app using the official 2025 English question bank.
 

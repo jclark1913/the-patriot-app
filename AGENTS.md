@@ -49,7 +49,7 @@ departures for discussion; do not silently reinterpret or edit the spec.
   concrete need.
 - Design for a narrow phone screen first: readable text, clear actions,
   comfortable touch targets, accessible controls, and safe-area spacing.
-- Preserve oral recall: answer aloud or mentally before revealing answers.
+- Let the learner consider their answer before revealing accepted answers.
   Practice uses correct/incorrect self-grading; Study provides simple navigation.
 - Practice accepts 1–128 questions, defaults to 20, and offers All 128.
   Ask every selected question once, then show the session score. Do not add

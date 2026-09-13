@@ -78,10 +78,10 @@
     display: flex;
     flex-direction: column;
     padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
   }
   .site-header,
-  .home-main,
-  .site-footer {
+  .home-main {
     width: min(1120px, calc(100% - 96px));
     margin-inline: auto;
   }
@@ -99,40 +99,15 @@
   .hero {
     display: grid;
     grid-template-columns: 1.3fr 1fr;
+    grid-template-areas:
+      'copy art'
+      'action art';
     align-items: center;
-    gap: 36px;
+    gap: 24px 36px;
     padding-block: 76px 68px;
   }
-  .study-intro {
-    border-top: 1px solid var(--line);
-    padding-block: 35px 43px;
-  }
-  .learning-steps {
-    padding: 0;
-    margin: 28px 0 0;
-    list-style: none;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 30px;
-  }
-  .source-strip {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    border-block: 1px solid var(--line);
-    padding: 14px 0;
-  }
-  .site-footer {
-    margin-top: auto;
-    display: flex;
-    justify-content: space-between;
-    gap: 20px;
-    padding-block: 29px calc(26px + env(safe-area-inset-bottom));
-    font-size: 9px;
-    font-weight: 650;
-    letter-spacing: 0.13em;
-    color: var(--muted);
+  .hero-copy {
+    grid-area: copy;
   }
   .study-main {
     width: min(760px, calc(100% - 48px));
@@ -165,11 +140,13 @@
     background: none;
     padding: 0;
     min-height: 44px;
-    font-size: 32px;
+    font-size: 24px;
     font-weight: 750;
-    letter-spacing: -1.5px;
+    letter-spacing: -0.7px;
+    white-space: nowrap;
   }
   .brand-mark {
+    flex-shrink: 0;
     display: grid;
     place-items: center;
     width: 34px;
@@ -181,9 +158,6 @@
   .brand-mark .icon {
     width: 21px;
     height: 21px;
-  }
-  .brand-dot {
-    color: var(--red);
   }
   .header-link,
   .text-button {
@@ -236,10 +210,21 @@
     font-weight: 400;
   }
   .hero-description {
-    max-width: 385px;
-    font-size: 15px;
+    max-width: 460px;
+    font-size: 16px;
     color: var(--muted);
-    line-height: 1.8;
+  }
+  .hero-source {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    margin-top: 8px;
+    font-size: 12px;
+  }
+  .hero-source .icon {
+    width: 15px;
+    height: 15px;
   }
   .button {
     display: inline-flex;
@@ -264,61 +249,15 @@
     background: #2e465f;
   }
   .hero-button {
-    margin-top: 31px;
+    grid-area: action;
+    justify-self: start;
+    align-self: start;
     min-width: 211px;
     justify-content: space-between;
   }
-  .hero-footnote {
-    color: var(--muted);
-    font-size: 11px;
-    margin-top: 14px;
-  }
-  .intro-title h2 {
-    font-size: 28px;
-    letter-spacing: -0.025em;
-    margin-top: 9px;
-  }
-  .intro-title .eyebrow {
-    color: var(--red);
-    font-size: 9px;
-  }
-  .learning-steps li {
-    display: flex;
-    gap: 16px;
-  }
-  .step-number {
-    color: var(--red);
-    font-size: 11px;
-    letter-spacing: 0.05em;
-    padding-top: 3px;
-    font-weight: 600;
-  }
-  .learning-steps h3 {
-    font-size: 14px;
-    margin: 0 0 8px;
-    font-weight: 600;
-  }
-  .learning-steps p {
-    font-size: 12px;
-    color: var(--muted);
-    line-height: 1.75;
-  }
-  .source-strip > span {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    font-size: 12px;
-  }
-  .source-strip > span .icon {
-    color: var(--red);
-    width: 19px;
-    height: 19px;
-  }
-  .source-strip .text-button {
-    font-size: 12px;
-  }
 
   .chapter-art {
+    grid-area: art;
     position: relative;
     height: 354px;
     width: 100%;
@@ -337,16 +276,6 @@
     inset: -13px;
     border-radius: 50%;
     border: 1px dashed #d6d8ca;
-  }
-  .art-caption {
-    position: absolute;
-    z-index: 2;
-    top: 4px;
-    left: 28%;
-    transform: rotate(-9deg);
-    color: var(--muted);
-    font-size: 8px;
-    letter-spacing: 0.2em;
   }
   .paper {
     position: absolute;
@@ -663,16 +592,6 @@
   .button-next:hover {
     background: #f0f0e7;
   }
-  .study-bottom-note {
-    text-align: center;
-    color: var(--muted);
-    font-size: 11px;
-    margin-top: 22px;
-  }
-  .help-main > .eyebrow {
-    color: var(--red);
-    margin-top: 32px;
-  }
   .help-main h1 {
     font-size: 42px;
     line-height: 1.15;
@@ -721,8 +640,7 @@
 @layer responsive {
   @media (max-width: 800px) {
     .site-header,
-    .home-main,
-    .site-footer {
+    .home-main {
       width: calc(100% - 48px);
     }
     .site-header {
@@ -735,31 +653,22 @@
     .hero h1 {
       font-size: 48px;
     }
-    .hero-description {
-      font-size: 14px;
-    }
     .chapter-art {
       transform: scale(0.82);
       transform-origin: right center;
     }
-    .learning-steps {
-      gap: 20px;
-    }
-    .learning-steps li {
-      gap: 10px;
-    }
   }
   @media (max-width: 600px) {
     .site-header,
-    .home-main,
-    .site-footer {
+    .home-main {
       width: calc(100% - 40px);
     }
     .site-header {
       min-height: 80px;
+      gap: 12px;
     }
     .brand {
-      font-size: 29px;
+      font-size: 18px;
       gap: 8px;
     }
     .brand-mark {
@@ -774,10 +683,15 @@
     .header-link {
       font-size: 11px;
       gap: 5px;
+      flex-shrink: 0;
     }
     .hero {
       grid-template-columns: minmax(0, 1fr);
-      padding-block: 39px 19px;
+      grid-template-areas:
+        'copy'
+        'art'
+        'action';
+      padding-block: 32px;
       gap: 12px;
     }
     .hero h1 {
@@ -789,20 +703,10 @@
       font-size: 9px;
       letter-spacing: 0.105em;
     }
-    .hero-description {
-      max-width: 340px;
-      line-height: 1.8;
-    }
     .hero-button {
       width: 100%;
-      margin-top: 25px;
       min-height: 56px;
       padding-inline: 20px;
-    }
-    .hero-footnote {
-      text-align: center;
-      margin-top: 12px;
-      font-size: 10px;
     }
     .chapter-art {
       height: 244px;
@@ -821,10 +725,6 @@
     .paper {
       top: 33px;
     }
-    .art-caption {
-      top: 0;
-      left: 16%;
-    }
     .spark-one {
       bottom: -88px;
       right: -12px;
@@ -832,45 +732,6 @@
     .spark-two {
       left: -26px;
       top: 8px;
-    }
-    .study-intro {
-      padding-block: 29px 27px;
-    }
-    .intro-title h2 {
-      font-size: 26px;
-    }
-    .learning-steps {
-      grid-template-columns: 1fr;
-      gap: 22px;
-      margin-top: 25px;
-    }
-    .learning-steps li {
-      gap: 17px;
-    }
-    .learning-steps h3 {
-      margin-bottom: 5px;
-      font-size: 13px;
-    }
-    .learning-steps p {
-      font-size: 12px;
-    }
-    .learning-steps p br {
-      display: none;
-    }
-    .source-strip {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 4px;
-      padding-block: 18px 7px;
-    }
-    .site-footer {
-      font-size: 8px;
-      line-height: 1.6;
-      padding-top: 24px;
-    }
-    .site-footer > span:last-child {
-      max-width: 117px;
-      text-align: right;
     }
     .study-main {
       width: calc(100% - 28px);
@@ -949,6 +810,11 @@
     }
     .help-main h2 {
       font-size: 24px;
+    }
+  }
+  @media (max-width: 400px) {
+    .header-link .icon {
+      display: none;
     }
   }
   @media (prefers-reduced-motion: reduce) {

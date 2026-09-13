@@ -8,22 +8,23 @@ type Screen = 'home' | 'study' | 'help'
 
 function Brand({ onHome }: { onHome: () => void }) {
   return (
-    <button className="brand" onClick={onHome} aria-label="Patriot home">
+    <button
+      className="brand"
+      onClick={onHome}
+      aria-label="The Patriot App home"
+    >
       <span className="brand-mark">
         <Icon name="star" />
       </span>
-      <span>
-        patriot<span className="brand-dot">.</span>
-      </span>
+      <span>The Patriot App</span>
     </button>
   )
 }
 
-function ChapterArtwork() {
+function StudyArtwork() {
   return (
     <div className="chapter-art" aria-hidden="true">
       <div className="art-circle" />
-      <div className="art-caption">YOUR NEXT CHAPTER</div>
       <div className="paper paper-back" />
       <div className="paper paper-middle" />
       <div className="paper paper-front">
@@ -35,13 +36,13 @@ function ChapterArtwork() {
           <Icon name="book" />
         </div>
         <span className="paper-title">
-          We the
+          Civics
           <br />
-          learners.
+          2025
         </span>
         <div className="paper-bottom">
-          <span>ONE QUESTION AT A TIME</span>
-          <span>01</span>
+          <span>{questions.length} QUESTIONS</span>
+          <span>ENGLISH</span>
         </div>
       </div>
       <span className="art-spark spark-one">✳</span>
@@ -50,87 +51,39 @@ function ChapterArtwork() {
   )
 }
 
-function Home({
-  onStudy,
-  onHelp,
-}: {
-  onStudy: () => void
-  onHelp: () => void
-}) {
+function Home({ onStudy }: { onStudy: () => void }) {
   return (
     <main id="main-content" className="home-main">
       <section className="hero" aria-labelledby="home-title">
         <div className="hero-copy">
           <p className="eyebrow">
             <span className="little-line" />
-            2025 CIVICS TEST · ENGLISH
+            2025 · English · {questions.length} questions
           </p>
           <h1 id="home-title">
-            A little practice.
-            <br />A big step <em>forward.</em>
+            Study for the
+            <br />
+            <em>USCIS civics test</em>
           </h1>
           <p className="hero-description">
-            Your next chapter starts with what you know. Get comfortable with
-            the civics questions, one at a time.
+            Prepare for your U.S. citizenship interview with the{' '}
+            {questions.length} official civics questions and answers from the
+            USCIS website.
           </p>
-          <button
-            className="button button-primary hero-button"
-            onClick={onStudy}
+          <a
+            className="hero-source"
+            href={bankMetadata.sourceUrl}
+            target="_blank"
+            rel="noreferrer"
           >
-            Start studying <Icon name="arrow-right" />
-          </button>
-          <p className="hero-footnote">
-            No sign-up. No pressure. Just practice.
-          </p>
+            View official USCIS questions <Icon name="external" />
+          </a>
         </div>
-        <ChapterArtwork />
-      </section>
-      <section className="study-intro" aria-labelledby="study-intro-title">
-        <div className="intro-title">
-          <span className="eyebrow">SMALL STEPS. REAL CONFIDENCE.</span>
-          <h2 id="study-intro-title">Make yourself familiar.</h2>
-        </div>
-        <ol className="learning-steps">
-          <li>
-            <span className="step-number">01</span>
-            <div>
-              <h3>Read & recall</h3>
-              <p>
-                Give yourself a moment. <br />
-                Say your answer out loud.
-              </p>
-            </div>
-          </li>
-          <li>
-            <span className="step-number">02</span>
-            <div>
-              <h3>Reveal the answer</h3>
-              <p>
-                Check the official answers. <br />A little clearer each time.
-              </p>
-            </div>
-          </li>
-          <li>
-            <span className="step-number">03</span>
-            <div>
-              <h3>Keep going</h3>
-              <p>
-                Take the next question. <br />
-                Move at your own pace.
-              </p>
-            </div>
-          </li>
-        </ol>
-      </section>
-      <div className="source-strip">
-        <span>
-          <Icon name="book" />
-          {questions.length} official questions · 2025 edition
-        </span>
-        <button className="text-button" onClick={onHelp}>
-          About the questions <Icon name="arrow-right" />
+        <StudyArtwork />
+        <button className="button button-primary hero-button" onClick={onStudy}>
+          Start studying <Icon name="arrow-right" />
         </button>
-      </div>
+      </section>
     </main>
   )
 }
@@ -265,7 +218,7 @@ function Study({ onHome }: { onHome: () => void }) {
           <Icon name="arrow-left" />
           Home
         </button>
-        <span className="eyebrow">STUDY AT YOUR PACE</span>
+        <span className="eyebrow">STUDY</span>
       </div>
       <section className="study-sheet" aria-label="Study question">
         <div className="study-position">
@@ -298,9 +251,7 @@ function Study({ onHome }: { onHome: () => void }) {
           <h1 className="question-title" ref={headingRef} tabIndex={-1}>
             {question.question}
           </h1>
-          <p className="recall-hint">
-            Take a moment. Say your answer out loud.
-          </p>
+          <p className="recall-hint">Think of your answer, then reveal.</p>
           <button
             className={`button reveal-button ${revealed ? 'is-revealed' : 'button-primary'}`}
             onClick={() => setRevealed(!revealed)}
@@ -339,9 +290,6 @@ function Study({ onHome }: { onHome: () => void }) {
           )}
         </div>
       </section>
-      <p className="study-bottom-note">
-        One question at a time. You’ve got this.
-      </p>
     </main>
   )
 }
@@ -358,18 +306,14 @@ function Help({ onHome }: { onHome: () => void }) {
         <Icon name="arrow-left" />
         Home
       </button>
-      <p className="eyebrow">A LITTLE CONTEXT</p>
       <h1 ref={headingRef} tabIndex={-1}>
-        Your next chapter,
-        <br />
-        with good information.
+        About The Patriot App
       </h1>
       <section>
-        <h2>Official questions. Your own pace.</h2>
+        <h2>Question sources</h2>
         <p>
-          Patriot brings together the {questions.length} English questions from
-          the 2025 USCIS civics study materials. Read a question, say your
-          answer, then reveal the accepted answers.
+          The {questions.length} official English questions for the 2025 USCIS
+          civics test.
         </p>
         <a
           className="lookup-link"
@@ -382,12 +326,11 @@ function Help({ onHome }: { onHome: () => void }) {
         </a>
       </section>
       <section>
-        <h2>Some answers change.</h2>
+        <h2>Current and local answers</h2>
         <p>
-          Questions about current leaders include a verification date and an
-          official source. Questions about your state or representative link to
-          official directories so you can find your own answer. Those websites
-          require an Internet connection.
+          Current answers include a verification date and official source. Local
+          questions link to official directories. These websites require an
+          Internet connection.
         </p>
         <a
           className="lookup-link"
@@ -400,19 +343,16 @@ function Help({ onHome }: { onHome: () => void }) {
         </a>
       </section>
       <section>
-        <h2>A fresh start each time.</h2>
-        <p>
-          There’s no account and no saved study history. A fresh launch or page
-          reload starts over.
-        </p>
+        <h2>No saved progress</h2>
+        <p>Study history isn’t saved. Reloading starts a new session.</p>
       </section>
       <div className="source-details">
         <p>{bankMetadata.sourceEdition}</p>
         <p>Question data: {bankMetadata.version}</p>
         <p>
-          Patriot is an independent civics study aid, not affiliated with or
-          endorsed by USCIS or the Department of Homeland Security. Confirm
-          current and local answers before your interview.
+          The Patriot App is an independent civics study aid, not affiliated
+          with or endorsed by USCIS or the Department of Homeland Security.
+          Confirm current and local answers before your interview.
         </p>
       </div>
     </main>
@@ -432,8 +372,8 @@ export default function App() {
   useEffect(() => {
     document.title =
       screen === 'home'
-        ? 'Patriot — Civics, made simple'
-        : `${screen === 'study' ? 'Study' : 'Help & Sources'} — Patriot`
+        ? 'The Patriot App'
+        : `${screen === 'study' ? 'Study' : 'Help & Sources'} — The Patriot App`
   }, [screen])
 
   return (
@@ -454,15 +394,9 @@ export default function App() {
           <Icon name="arrow-right" />
         </button>
       </header>
-      {screen === 'home' && (
-        <Home onStudy={() => goTo('study')} onHelp={() => goTo('help')} />
-      )}
+      {screen === 'home' && <Home onStudy={() => goTo('study')} />}
       {screen === 'study' && <Study onHome={() => goTo('home')} />}
       {screen === 'help' && <Help onHome={() => goTo('home')} />}
-      <footer className="site-footer">
-        <span>CIVICS, MADE SIMPLE.</span>
-        <span>YOUR NEXT CHAPTER STARTS HERE.</span>
-      </footer>
     </div>
   )
 }

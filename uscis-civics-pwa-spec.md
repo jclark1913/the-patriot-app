@@ -53,7 +53,7 @@ Do not include progress dashboards, an onboarding wizard, or a general Settings 
 - Keep accepted answers hidden until the learner taps Show Answer.
 - Show the official accepted answer examples and any instructions about how many responses are required.
 - Allow the learner to move backward and forward. Hide the answer when moving to a different question.
-- The learner answers aloud or mentally. Study navigation does not record grades or track learning history.
+- The learner considers an answer before revealing the accepted answers. Study navigation does not record grades or track learning history.
 - Show source/verification information where an answer changes over time or depends on location.
 
 ## 5. Practice Test
@@ -77,7 +77,7 @@ Suggested helper text: "Choose how many questions to practice. You'll answer eve
 2. For All 128, shuffle the entire bank and ask each question exactly once.
 3. Preserve that order for the life of the session; a rerender must not reshuffle it.
 4. Show the current position, such as "Question 7 of 40", separately from the official question number.
-5. Let the learner answer aloud or mentally before revealing the accepted answers.
+5. Let the learner consider an answer before revealing the accepted answers.
 6. After reveal, offer Incorrect and Correct.
 7. Record one grade for that question in memory and advance to the next question with its answer hidden.
 8. Finish after exactly the selected number of graded questions. Prevent repeated taps from grading twice or skipping a question.
