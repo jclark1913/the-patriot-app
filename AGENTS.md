@@ -52,8 +52,11 @@ departures for discussion; do not silently reinterpret or edit the spec.
 - Let the learner consider their answer before revealing accepted answers.
   Practice uses correct/incorrect self-grading; Study provides simple navigation.
 - Practice accepts 1–128 questions, defaults to 20, and offers All 128.
-  Ask every selected question once, then show the session score. Do not add
-  early stopping, pass/fail thresholds, or a separate exam-simulation mode.
+  Ask every selected question once, then show the session score.
+- Only for 20-question practice, show the passing score of 12 correct during
+  setup and a practice passed/not passed label after all 20 are graded.
+  Omit the passing-score note and result label for other lengths. Do not add
+  early stopping, configurable thresholds, or a separate exam-simulation mode.
 - Treat offline Study and Practice as core requirements. Cache the app and
   bundled questions; core use must not depend on remote services or assets.
 - Keep learner state in memory only. Do not add saved progress, bookmarks,

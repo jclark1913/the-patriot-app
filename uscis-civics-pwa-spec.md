@@ -68,6 +68,8 @@ The learner chooses how many questions to practice before starting.
 - Empty, fractional, non-numeric, zero, negative, and out-of-range entries prevent starting and show a short inline explanation.
 - Starting a session locks its selected count and question list. Changing the count requires starting a new session.
 - A fresh setup defaults to 20; the preference is not saved.
+- Only when the selected count is 20, show "Passing score: 12 of 20 correct."
+  Hide this note for other counts and invalid input.
 
 Suggested helper text: "Choose how many questions to practice. You'll answer every question you select."
 
@@ -95,7 +97,7 @@ Show:
 - Percentage correct, calculated from correct answers divided by the selected count.
 - Start Another Practice and Home actions.
 
-These are practice scores, with no pass/fail label or inferred passing score for custom lengths. Starting another practice returns to setup.
+Only after a 20-question session is complete, show "Practice passed" for 12–20 correct or "Practice not passed" for 0–11 correct, alongside "Passing score: 12 of 20 correct." These labels refer to the practice session. Other lengths show counts and accuracy only, without a passing-score note or pass/fail label. Starting another practice returns to setup.
 
 The official standard 2025 test uses a bank of 128 questions, asks up to 20, and requires 12 correct answers. Explain that distinction briefly in Help & Sources, using official USCIS references. The app supports longer or shorter practice and is not a complete naturalization-exam simulator.
 
@@ -213,6 +215,9 @@ Test observable behavior appropriate to the feature:
 - Each question graded once, including rapid repeated taps.
 - Completion only at the selected count, including after 12 correct or 9 incorrect answers.
 - Correct counts and percentages for all-correct, all-incorrect, and mixed results.
+- Passing-score setup guidance only for a valid count of 20; result labels only
+  after all 20 are graded, with 11 correct not passed and 12 correct passed.
+- No passing-score note or pass/fail result for any other session length.
 - Fresh setup defaults and fresh state after reload.
 - Study navigation, shuffle behavior, and accessible count validation.
 - Safe update behavior around active sessions.

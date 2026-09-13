@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
-import { answerOverrides, bankMetadata, questions } from './data'
-import type { CivicsQuestion } from './data'
+import { bankMetadata, questions } from './data'
 import { Icon } from './components/Icon'
+import { QuestionContent } from './components/QuestionContent'
+import { PracticeFlow } from './PracticeFlow'
+import { createPracticeSession, reducePractice } from './practice'
+import type { PracticeAction, PracticeSession } from './practice'
 import { shuffledCopy } from './study'
 
-type Screen = 'home' | 'study' | 'help'
+type Screen = 'home' | 'study' | 'practice' | 'help'
 
 function Brand({ onHome }: { onHome: () => void }) {
   return (
@@ -51,7 +54,13 @@ function StudyArtwork() {
   )
 }
 
-function Home({ onStudy }: { onStudy: () => void }) {
+function Home({
+  onStudy,
+  onPractice,
+}: {
+  onStudy: () => void
+  onPractice: () => void
+}) {
   return (
     <main id="main-content" className="home-main">
       <section className="hero" aria-labelledby="home-title">
@@ -80,108 +89,22 @@ function Home({ onStudy }: { onStudy: () => void }) {
           </a>
         </div>
         <StudyArtwork />
-        <button className="button button-primary hero-button" onClick={onStudy}>
-          Start studying <Icon name="arrow-right" />
-        </button>
+        <div className="hero-actions">
+          <button
+            className="button button-primary hero-button"
+            onClick={onStudy}
+          >
+            Start studying <Icon name="arrow-right" />
+          </button>
+          <button
+            className="button button-secondary hero-button"
+            onClick={onPractice}
+          >
+            Practice test <Icon name="arrow-right" />
+          </button>
+        </div>
       </section>
     </main>
-  )
-}
-
-function AnswerPanel({ question }: { question: CivicsQuestion }) {
-  const override = question.answerKey
-    ? answerOverrides[question.answerKey]
-    : undefined
-  const unresolved =
-    question.answerType !== 'static' && override?.status !== 'verified'
-  const answers =
-    question.answerType === 'static'
-      ? question.acceptedAnswers
-      : (override?.answers ?? [])
-  const verificationDate = override?.verifiedOn
-    ? new Intl.DateTimeFormat('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        timeZone: 'UTC',
-      }).format(new Date(`${override.verifiedOn}T00:00:00Z`))
-    : null
-
-  return (
-    <section
-      className={`answer-panel ${unresolved ? 'answer-local' : ''}`}
-      aria-label="Revealed answer"
-    >
-      <p className="eyebrow">
-        {unresolved
-          ? question.answerType === 'location-dependent'
-            ? 'YOUR LOCAL ANSWER'
-            : 'CURRENT ANSWER'
-          : 'ACCEPTED ANSWERS'}
-      </p>
-      {unresolved ? (
-        <>
-          <h2>
-            {question.answerType === 'location-dependent'
-              ? 'This one depends on where you live.'
-              : 'Check the current answer.'}
-          </h2>
-          <p>
-            {override?.guidance ??
-              'Use the official source to find and confirm your answer.'}
-          </p>
-          <a
-            className="lookup-link"
-            href={override?.sourceUrl ?? question.sourceUrl}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Find your answer <Icon name="external" />
-          </a>
-          <p className="connection-note">
-            Opens an official website. Internet connection needed.
-          </p>
-        </>
-      ) : (
-        <>
-          <p className="answer-instruction">
-            {question.requiredAnswers > 1
-              ? `Your answer should include ${question.requiredAnswers} items.`
-              : answers.length > 1
-                ? 'Any one of these answers is accepted.'
-                : 'The official accepted answer:'}
-          </p>
-          <ul className="accepted-answers">
-            {answers.map((answer, index) => (
-              <li key={`${index}-${answer}`}>{answer}</li>
-            ))}
-          </ul>
-        </>
-      )}
-      {question.notes && question.notes.length > 0 && (
-        <div className="answer-notes">
-          {question.notes.map((note, index) => (
-            <p key={index}>{note}</p>
-          ))}
-        </div>
-      )}
-      {verificationDate && (
-        <p className="verification-note">
-          Current answer · Verified {verificationDate}
-        </p>
-      )}
-      {!unresolved && (
-        <a
-          className="answer-source"
-          href={override?.sourceUrl ?? question.sourceUrl}
-          target="_blank"
-          rel="noreferrer"
-        >
-          {override ? 'Official answer source' : 'USCIS study materials'}
-          <Icon name="external" />
-        </a>
-      )}
-    </section>
   )
 }
 
@@ -190,12 +113,7 @@ function Study({ onHome }: { onHome: () => void }) {
   const [index, setIndex] = useState(0)
   const [revealed, setRevealed] = useState(false)
   const [shuffled, setShuffled] = useState(false)
-  const headingRef = useRef<HTMLHeadingElement>(null)
   const question = order[index]
-
-  useEffect(() => {
-    headingRef.current?.focus({ preventScroll: true })
-  }, [question.id])
 
   function navigate(nextIndex: number) {
     setIndex(nextIndex)
@@ -241,30 +159,11 @@ function Study({ onHome }: { onHome: () => void }) {
           max={order.length}
           aria-label="Question position"
         />
-        <div className="question-body">
-          <div className="question-category">
-            <span className="eyebrow">{question.category}</span>
-            <span className="question-number">
-              NO. {String(question.number).padStart(3, '0')}
-            </span>
-          </div>
-          <h1 className="question-title" ref={headingRef} tabIndex={-1}>
-            {question.question}
-          </h1>
-          <p className="recall-hint">Think of your answer, then reveal.</p>
-          <button
-            className={`button reveal-button ${revealed ? 'is-revealed' : 'button-primary'}`}
-            onClick={() => setRevealed(!revealed)}
-            aria-expanded={revealed}
-            aria-controls="answer-panel"
-          >
-            {revealed ? 'Hide answer' : 'Show answer'}
-            <Icon name={revealed ? 'book' : 'arrow-right'} />
-          </button>
-          <div id="answer-panel" hidden={!revealed}>
-            {revealed && <AnswerPanel question={question} />}
-          </div>
-        </div>
+        <QuestionContent
+          question={question}
+          revealed={revealed}
+          onToggleReveal={() => setRevealed(!revealed)}
+        />
         <div className="study-navigation">
           <button
             className="button button-previous"
@@ -343,8 +242,28 @@ function Help({ onHome }: { onHome: () => void }) {
         </a>
       </section>
       <section>
+        <h2>Practice and the USCIS test</h2>
+        <p>
+          Practice asks every question you select and reports your score. The
+          standard 2025 USCIS civics test asks up to 20 questions and requires
+          12 correct answers to pass. This app is a study aid, not a complete
+          citizenship exam simulation.
+        </p>
+        <a
+          className="lookup-link"
+          href={bankMetadata.sourceUrl}
+          target="_blank"
+          rel="noreferrer"
+        >
+          USCIS test format <Icon name="external" />
+        </a>
+      </section>
+      <section>
         <h2>No saved progress</h2>
-        <p>Study history isn’t saved. Reloading starts a new session.</p>
+        <p>
+          Study history and practice scores aren’t saved. Reloading starts a new
+          session.
+        </p>
       </section>
       <div className="source-details">
         <p>{bankMetadata.sourceEdition}</p>
@@ -361,19 +280,37 @@ function Help({ onHome }: { onHome: () => void }) {
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>('home')
+  const [practiceSession, setPracticeSession] =
+    useState<PracticeSession | null>(null)
   const brandRef = useRef<HTMLDivElement>(null)
 
   function goTo(next: Screen) {
+    if (
+      screen === 'practice' &&
+      practiceSession &&
+      practiceSession.grades.length > 0 &&
+      practiceSession.grades.length < practiceSession.questions.length &&
+      !window.confirm('End practice and discard your score?')
+    )
+      return
+
+    setPracticeSession(null)
     setScreen(next)
     window.scrollTo({ top: 0, behavior: 'instant' })
     if (next === 'home') brandRef.current?.querySelector('button')?.focus()
+  }
+
+  function updatePractice(action: PracticeAction) {
+    setPracticeSession((session) =>
+      session ? reducePractice(session, action) : null,
+    )
   }
 
   useEffect(() => {
     document.title =
       screen === 'home'
         ? 'The Patriot App'
-        : `${screen === 'study' ? 'Study' : 'Help & Sources'} — The Patriot App`
+        : `${screen === 'study' ? 'Study' : screen === 'practice' ? 'Practice Test' : 'Help & Sources'} — The Patriot App`
   }, [screen])
 
   return (
@@ -394,8 +331,22 @@ export default function App() {
           <Icon name="arrow-right" />
         </button>
       </header>
-      {screen === 'home' && <Home onStudy={() => goTo('study')} />}
+      {screen === 'home' && (
+        <Home
+          onStudy={() => goTo('study')}
+          onPractice={() => goTo('practice')}
+        />
+      )}
       {screen === 'study' && <Study onHome={() => goTo('home')} />}
+      {screen === 'practice' && (
+        <PracticeFlow
+          session={practiceSession}
+          onStart={(count) => setPracticeSession(createPracticeSession(count))}
+          onAction={updatePractice}
+          onHome={() => goTo('home')}
+          onRestart={() => setPracticeSession(null)}
+        />
+      )}
       {screen === 'help' && <Help onHome={() => goTo('home')} />}
     </div>
   )
